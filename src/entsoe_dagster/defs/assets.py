@@ -1,16 +1,18 @@
 import dagster as dg
-from dagster_duckdb import DuckDBResource
 import pandas as pd
 from datetime import datetime, timedelta
 from entsoe import EntsoePandasClient
+import polars as pl
+from pathlib import Path
+from .resources import Config
 
 def _load_entsoe_load_data(
         country_code: str, 
         start_date: str, 
         end_date: str, 
         entsoe_client: dg.ResourceParam[EntsoePandasClient],
-        duckdb: DuckDBResource,
-        table_name: str
+        table_name: str,
+        config: Config,
 ) -> pd.DataFrame:
 
     start = pd.Timestamp(start_date, tz='Europe/Brussels')
@@ -18,22 +20,18 @@ def _load_entsoe_load_data(
 
     df = entsoe_client.query_load(country_code, start=start, end=end)
     df = df.reset_index(drop=False)
+    
+    df = pl.from_pandas(df)
+    output_dir = Path(config.data_dir)
+    output_file_path = output_dir / "raw" / "entsoe" / f"{table_name}.parquet"
+    output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with duckdb.get_connection() as conn:
-        conn.execute(
-            f"""
-            create or replace table {table_name} as (
-                select * from df
-            )
-            """
-        )
-    return df
-
+    df.write_parquet(output_file_path)
 
 @dg.asset
 def raw_load_belgium(
-    duckdb: DuckDBResource,
     entsoe_client: dg.ResourceParam[EntsoePandasClient],
+    config: Config
 ):
     country_code = "BE"
     end_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
@@ -44,15 +42,15 @@ def raw_load_belgium(
         start_date='20251113',
         end_date=end_date,
         entsoe_client=entsoe_client,
-        duckdb=duckdb,
-        table_name=table_name
+        table_name=table_name,
+        config=config
     )
 
 
 @dg.asset
 def raw_load_france(
-    duckdb: DuckDBResource,
     entsoe_client: dg.ResourceParam[EntsoePandasClient],
+    config: Config
 ):
     country_code = "FR"
     end_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
@@ -63,15 +61,15 @@ def raw_load_france(
         start_date='20251113',
         end_date=end_date,
         entsoe_client=entsoe_client,
-        duckdb=duckdb,
-        table_name=table_name
+        table_name=table_name,
+        config=config
     )
 
 
 @dg.asset
 def raw_load_netherlands(
-    duckdb: DuckDBResource,
     entsoe_client: dg.ResourceParam[EntsoePandasClient],
+    config: Config
 ):
     country_code = "NL"
     end_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
@@ -82,6 +80,6 @@ def raw_load_netherlands(
         start_date='20251113',
         end_date=end_date,
         entsoe_client=entsoe_client,
-        duckdb=duckdb,
-        table_name=table_name
+        table_name=table_name,
+        config=config
     )
