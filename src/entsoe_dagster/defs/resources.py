@@ -9,7 +9,7 @@ database_resource = DuckDBResource(database=dg.EnvVar("DUCKDB_PATH").get_value()
 entsoe_client_resource = EntsoePandasClient(api_key=dg.EnvVar("ENTSOE_ACCESS_TOKEN").get_value())
 
 # config
-class Config(dg.Config):
+class Config(dg.ConfigurableResource):
     data_dir: str = "./data"
     entsoe_start_date: str = "20251113"
 

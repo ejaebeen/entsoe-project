@@ -491,6 +491,7 @@ dependencies = [
     { name = "entsoe-py" },
     { name = "pandas" },
     { name = "polars" },
+    { name = "pyarrow" },
     { name = "pyyaml" },
 ]
 
@@ -509,6 +510,7 @@ requires-dist = [
     { name = "entsoe-py", specifier = ">=0.7.8" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "polars", specifier = ">=1.35.2" },
+    { name = "pyarrow", specifier = ">=21.0.0" },
     { name = "pyyaml", specifier = ">=6.0.3" },
 ]
 
