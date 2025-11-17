@@ -11,3 +11,15 @@ entsoe:
     description: Ingest raw load data for Netherlands
     kwargs:
       country_code: NL
+  - name: raw_load_spain
+    description: Ingest raw load data for Spain
+    kwargs:
+      country_code: ES
+  - name: raw_load_italy
+    description: Ingest raw load data for Italy
+    kwargs:
+      country_code: IT
+  - name: raw_load_germany
+    description: Ingest raw load data for Germany
+    kwargs:
+      country_code: DE
