@@ -1,0 +1,13 @@
+entsoe:
+  - name: raw_load_belgium
+    description: Ingest raw load data for Belgium
+    kwargs:
+      country_code: BE
+  - name: raw_load_france
+    description: Ingest raw load data for France
+    kwargs:
+      country_code: FR
+  - name: raw_load_netherlands
+    description: Ingest raw load data for Netherlands
+    kwargs:
+      country_code: NL

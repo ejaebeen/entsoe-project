@@ -11,6 +11,7 @@ entsoe_client_resource = EntsoePandasClient(api_key=dg.EnvVar("ENTSOE_ACCESS_TOK
 # config
 class Config(dg.Config):
     data_dir: str = "./data"
+    entsoe_start_date: str = "20251113"
 
 
 @dg.definitions
@@ -19,6 +20,9 @@ def resources():
         resources={
             "duckdb": database_resource,
             "entsoe_client": entsoe_client_resource,
-            "config": Config(data_dir=dg.EnvVar("DATA_DIR")),
+            "config": Config(
+                data_dir=dg.EnvVar("DATA_DIR"),
+                entsoe_start_date="20251113",
+            ),
         }
     )

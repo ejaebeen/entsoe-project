@@ -9,7 +9,12 @@ dependencies = [
     "entsoe-py>=0.7.8",
     "pandas>=2.3.3",
     "polars>=1.35.2",
+    "pyyaml>=6.0.3",
 ]
+
+
+[tool.uv]
+package = true
 
 [dependency-groups]
 dev = [
@@ -24,6 +29,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 force-include = { "pyproject.toml" = "pyproject.toml" }
+packages = ["src/entsoe_dagster"]
 
 [tool.dg]
 directory_type = "project"
@@ -33,5 +39,3 @@ root_module = "entsoe_dagster"
 registry_modules = [
     "dagster_quickstart.components.*",
 ]
-
-
