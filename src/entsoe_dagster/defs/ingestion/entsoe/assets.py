@@ -66,6 +66,12 @@ def build_etl_job(entsoe_catalog_item: EntsoeCatalogItem) -> dg.Definitions:
             asset_key=asset_key,
         )
 
+        yield dg.MaterializeResult(
+            metadata={
+                "dagster/row_count": df.height
+            }
+        )
+
     return dg.Definitions(
         assets=[etl_asset],
     )

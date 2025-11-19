@@ -24,7 +24,6 @@ ingestion_catalog = IngestionCatalog.model_validate(ingestion_catalog)
 def stg_load(
         config: Config
 ):
-    
     dfs = []
 
     # Extract
@@ -62,4 +61,10 @@ def stg_load(
     df_all.write_parquet(
         output_file_path,
         partition_by=["date", "country_code"]
+    )
+
+    yield dg.MaterializeResult(
+        metadata={
+            "dagster/row_count": df_all.height
+        }
     )
