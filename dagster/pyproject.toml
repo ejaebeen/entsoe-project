@@ -6,22 +6,20 @@ dependencies = [
     "dagster==1.12.0",
     "dagster-duckdb>=0.28.0",
     "duckdb>=1.4.2",
-    "entsoe-py>=0.7.8",
-    "pandas>=2.3.3",
-    "polars>=1.35.2",
-    "pyarrow>=21.0.0",
-    "pyyaml>=6.0.3",
+    "entsoe-project",
 ]
 
 
 [tool.uv]
 package = true
 
+[tool.uv.sources]
+entsoe-project = { path = "../" }
+
 [dependency-groups]
 dev = [
     "dagster-webserver",
     "dagster-dg-cli",
-    "streamlit>=1.51.0",
 ]
 
 [build-system]

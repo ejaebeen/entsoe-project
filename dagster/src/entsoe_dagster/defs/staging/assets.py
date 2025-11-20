@@ -1,24 +1,32 @@
 import dagster as dg
 from ..ingestion.entsoe.models import IngestionCatalog
 import yaml
-from ..resources import Config
+from ..resources import Config, catalog_reader_resource
 from pathlib import Path
 from ...utils import generate_file_path_from_asset_key
 import polars as pl
+from entsoe_project.typed_defs.catalog import CatalogItem
 
 with open("ingestion_jobs.yaml", "r") as f:
     ingestion_catalog = yaml.safe_load(f)
 ingestion_catalog = IngestionCatalog.model_validate(ingestion_catalog)
 
+stg_load_catalog = catalog_reader_resource.select_catalog("stg_load")
+
+def generate_asset_key(catalog_item: CatalogItem) -> dg.AssetKey:
+    return dg.AssetKey([
+        catalog_item.layer,
+        catalog_item.group_name,
+        catalog_item.name,
+    ])
 
 @dg.asset(
-    key=["stg", "entsoe", "stg_load"],
+    key=generate_asset_key(stg_load_catalog),
     description="Staging area for ENTSOE load data",
     group_name="staging_entsoe",
     deps=[
-        dg.AssetKey(["raw", "entsoe", item.name]) 
-        for item in ingestion_catalog.entsoe 
-        if "raw_load_" in item.name
+        generate_asset_key(catalog_reader_resource.select_catalog(dep_name))
+        for dep_name in stg_load_catalog.deps
     ]
 )
 def stg_load(

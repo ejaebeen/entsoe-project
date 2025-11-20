@@ -1,0 +1,68 @@
+# INGESTION LAYER CATALOG ITEMS
+- name: raw_load_belgium
+  description: Ingest raw load data for Belgium
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: load
+  kwargs:
+    country_code: BE
+- name: raw_load_france
+  description: Ingest raw load data for France
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: load
+  kwargs:
+    country_code: FR
+- name: raw_load_netherlands
+  description: Ingest raw load data for Netherlands
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: load
+  kwargs:
+    country_code: NL
+- name: raw_load_spain
+  description: Ingest raw load data for Spain
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: load
+  kwargs:
+    country_code: ES
+- name: raw_load_italy
+  description: Ingest raw load data for Italy
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: load
+  kwargs:
+    country_code: IT
+- name: raw_load_germany
+  description: Ingest raw load data for Germany
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: load
+  kwargs:
+    country_code: DE
+
+# STAGING LAYER CATALOG ITEMS
+- name: stg_load
+  description: Stage load data
+  layer: staging
+  group_name: entsoe
+  tags:
+    domain: load
+  deps:
+    - raw_load_belgium
+    - raw_load_france
+    - raw_load_netherlands
+    - raw_load_spain
+    - raw_load_italy
+    - raw_load_germany
+
+# PROCESSED LAYER CATALOG ITEMS
+
+# MART LAYER CATALOG ITEMS
