@@ -14,7 +14,10 @@ def query_entsoe_load(
 
     # prepare date
     start_date = pd.Timestamp(start_date, tz='Europe/Brussels')
-    end_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+    end_date = pd.Timestamp(
+        (datetime.now() - timedelta(days=1)).strftime("%Y%m%d"),
+        tz='Europe/Brussels'
+    )
 
     # load data
     df = entsoe_client.query_load(
