@@ -13,10 +13,10 @@ def query_entsoe_load(
     """Read raw load data from EntsoePandasClient"""
 
     # prepare date
-    start_date = pd.Timestamp(start_date, tz='Europe/Brussels')
+    start_date = pd.Timestamp(start_date, tz='utc')
     end_date = pd.Timestamp(
         (datetime.now() - timedelta(days=1)).strftime("%Y%m%d"),
-        tz='Europe/Brussels'
+        tz='utc'
     )
 
     # load data

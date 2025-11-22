@@ -6,7 +6,9 @@ from ...resources import Config, catalog_reader_resource
 from entsoe_project.typed_defs.catalog import CatalogItem
 from ....utils import generate_file_path_from_asset_key
 from entsoe_project.transform_defs.ingestion.entsoe import query_entsoe_load
-
+from entsoe_project.schema.ingestion import SCHEMA
+from dagster_pandera import pandera_schema_to_dagster_type
+import pandera.polars as pa
 
 def _save_data(df: pl.DataFrame, output_dir: Path, asset_key: list[str]):
     """save parquet file"""
@@ -14,6 +16,20 @@ def _save_data(df: pl.DataFrame, output_dir: Path, asset_key: list[str]):
     output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     df.write_parquet(output_file_path)
+
+
+from pandera.typing import Series
+class StockPrices(pa.DataFrameModel):
+    """Open/close prices for one or more stocks by day."""
+
+    name: Series[str] = pa.Field(description="Ticker symbol of stock")
+    date: Series[str] = pa.Field(description="Date of prices")
+    open: Series[float] = pa.Field(ge=0, description="Price at market open")
+    close: Series[float] = pa.Field(ge=0, description="Price at market close")
+
+
+polars_dagster_type = pandera_schema_to_dagster_type(StockPrices)
+polars_dagster_type._typing_type = pl.DataFrame
 
 
 def build_etl_job(catalog_item: CatalogItem) -> dg.Definitions:
@@ -30,6 +46,10 @@ def build_etl_job(catalog_item: CatalogItem) -> dg.Definitions:
         key=asset_key,
         description=description,
         group_name=group_name,
+        metadata={
+            "dagster/uri": generate_file_path_from_asset_key(asset_key),
+            "dagster/column_schema": pandera_schema_to_dagster_type(SCHEMA[name]).metadata.get("schema"),
+        }
     )
     def etl_asset(
         entsoe_client: dg.ResourceParam[EntsoePandasClient],
@@ -48,7 +68,8 @@ def build_etl_job(catalog_item: CatalogItem) -> dg.Definitions:
 
         yield dg.MaterializeResult(
             metadata={
-                "dagster/row_count": df.height
+                "dagster/row_count": df.height,
+                # "dagster/uri": Path(config.data_dir) / generate_file_path_from_asset_key(asset_key),
             }
         )
 

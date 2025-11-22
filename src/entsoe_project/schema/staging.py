@@ -1,4 +1,11 @@
-from pandera.polars import DataFrameSchema
+import pandera.polars as pa
+import polars as pl
 
-class StagingLoadSchema(DataFrameSchema):
-    pass
+SCHEMA = {
+    "stg_load": pa.DataFrameSchema({
+        "index": pa.Column(pl.Datetime("ns", "UTC")),
+        "Actual Load": pa.Column(float),
+        "country_code": pa.Column(str),
+        "date": pa.Column(pl.Date),
+    }),
+}   

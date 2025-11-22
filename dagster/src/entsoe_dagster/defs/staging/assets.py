@@ -35,15 +35,15 @@ def stg_load(
     dfs = []
 
     # Extract
-    for item in ingestion_catalog.entsoe:
-        if "raw_load_" in item.name:
-            input_file_path = (
-                Path(config.data_dir) /
-                generate_file_path_from_asset_key(["raw", "entsoe", item.name])
-            )
-            df = pl.read_parquet(input_file_path)
+    for dep_name in stg_load_catalog.deps:
+        item = catalog_reader_resource.select_catalog(dep_name)
+        input_file_path = (
+            Path(config.data_dir) /
+            generate_file_path_from_asset_key(["ingestion", "entsoe", dep_name])
+        )
+        df = pl.read_parquet(input_file_path)
 
-            dfs.append((item.kwargs.country_code, df))
+        dfs.append((item.kwargs.get("country_code"), df))
 
     # Transform
     processed_dfs = []
@@ -62,7 +62,7 @@ def stg_load(
     # load
     output_file_path = (
         Path(config.data_dir) /
-        generate_file_path_from_asset_key(["stg", "entsoe", "stg_load"])
+        generate_file_path_from_asset_key(["stg", "entsoe", "stg_load"], partition=True)
     )
     output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
