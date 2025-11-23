@@ -5,7 +5,7 @@ from pathlib import Path
 from ...resources import Config, catalog_reader_resource
 from entsoe_project.typed_defs.catalog import CatalogItem
 from ....utils import generate_file_path_from_asset_key
-from entsoe_project.transform_defs.ingestion.entsoe import query_entsoe_load, query_entsoe_generation
+from entsoe_project.transform_defs.ingestion.entsoe import DOMAIN_PROCESSORS
 from entsoe_project.schema.ingestion import SCHEMA
 from dagster_pandera import pandera_schema_to_dagster_type
 
@@ -21,8 +21,7 @@ def _save_data(df: pl.DataFrame, output_dir: Path, asset_key: list[str]):
 def build_etl_job(catalog_item: CatalogItem) -> dg.Definitions:
     # obtain parameters
     name = catalog_item.name
-    country_code = catalog_item.kwargs.get("country_code", None)
-    psr_type = catalog_item.kwargs.get("psr_type", None)
+    kwargs = catalog_item.kwargs
     description = catalog_item.description
     group_name = catalog_item.group_name
     layer = catalog_item.layer
@@ -31,69 +30,36 @@ def build_etl_job(catalog_item: CatalogItem) -> dg.Definitions:
 
     asset_key = [layer, group_name, name]
 
-    if domain == "load":
-        @dg.asset(
-            key=asset_key,
-            description=description,
-            group_name=asset_group_name,
-            metadata={
-                "dagster/uri": generate_file_path_from_asset_key(asset_key),
-                "dagster/column_schema": pandera_schema_to_dagster_type(SCHEMA[name]).metadata.get("schema"),
-            },
-            tags=catalog_item.tags
+    @dg.asset(
+        key=asset_key,
+        description=description,
+        group_name=asset_group_name,
+        metadata={
+            "dagster/uri": generate_file_path_from_asset_key(asset_key),
+            "dagster/column_schema": pandera_schema_to_dagster_type(SCHEMA[name]).metadata.get("schema"),
+        },
+        tags=catalog_item.tags
+    )
+    def etl_asset(
+        entsoe_client: dg.ResourceParam[EntsoePandasClient],
+        config: Config
+    ):
+        df = DOMAIN_PROCESSORS[domain](
+            start_date=config.entsoe_start_date,
+            entsoe_client=entsoe_client,
+            kwargs=kwargs
         )
-        def etl_asset(
-            entsoe_client: dg.ResourceParam[EntsoePandasClient],
-            config: Config
-        ):
-            df = query_entsoe_load(
-                start_date=config.entsoe_start_date,
-                country_code=country_code,
-                entsoe_client=entsoe_client,
-            )
-            _save_data(
-                df=df,
-                output_dir=Path(config.data_dir),
-                asset_key=asset_key,
-            )
-
-            yield dg.MaterializeResult(
-                metadata={
-                    "dagster/row_count": df.height,
-                }
-            )
-    elif domain == "generation":
-        @dg.asset(
-            key=asset_key,
-            description=description,
-            group_name=asset_group_name,
-            metadata={
-                "dagster/uri": generate_file_path_from_asset_key(asset_key),
-                "dagster/column_schema": pandera_schema_to_dagster_type(SCHEMA[name]).metadata.get("schema"),
-            },
-            tags=catalog_item.tags
+        _save_data(
+            df=df,
+            output_dir=Path(config.data_dir),
+            asset_key=asset_key,
         )
-        def etl_asset(
-            entsoe_client: dg.ResourceParam[EntsoePandasClient],
-            config: Config
-        ):
-            df = query_entsoe_generation(
-                start_date=config.entsoe_start_date,
-                country_code=country_code,
-                entsoe_client=entsoe_client,
-                psr_type=psr_type
-            )
-            _save_data(
-                df=df,
-                output_dir=Path(config.data_dir),
-                asset_key=asset_key,
-            )
 
-            yield dg.MaterializeResult(
-                metadata={
-                    "dagster/row_count": df.height,
-                }
-            )
+        yield dg.MaterializeResult(
+            metadata={
+                "dagster/row_count": df.height,
+            }
+        )
 
     return dg.Definitions(
         assets=[etl_asset],

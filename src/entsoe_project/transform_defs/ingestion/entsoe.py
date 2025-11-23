@@ -7,10 +7,11 @@ import pandas as pd
 
 def query_entsoe_load(
         start_date: str,
-        country_code: str,
         entsoe_client: EntsoePandasClient,
+        kwargs: dict,
 ) -> pl.DataFrame:
     """Read raw load data from EntsoePandasClient"""
+    country_code = kwargs.get("country_code")
 
     # prepare date
     start_date = pd.Timestamp(start_date, tz='utc')
@@ -34,11 +35,12 @@ def query_entsoe_load(
 
 def query_entsoe_generation(
         start_date: str,
-        country_code: str,
         entsoe_client: EntsoePandasClient,
-        psr_type: list[str] | None = None,
+        kwargs: dict,
 ) -> pl.DataFrame:
     """Read raw generation data from EntsoePandasClient"""
+    country_code = kwargs.get("country_code")
+    psr_type = kwargs.get(psr_type, None)
 
     # prepare date
     start_date = pd.Timestamp(start_date, tz='utc')
@@ -64,6 +66,42 @@ def query_entsoe_generation(
     df = pl.from_pandas(df)
 
     return df
+
+
+def query_entsoe_import(
+        start_date: str,
+        entsoe_client: EntsoePandasClient,
+        kwargs: dict,
+) -> pl.DataFrame:
+    """Read raw load data from EntsoePandasClient"""
+    country_code = kwargs.get("country_code")
+
+    # prepare date
+    start_date = pd.Timestamp(start_date, tz='utc')
+    end_date = pd.Timestamp(
+        (datetime.now() - timedelta(days=1)).strftime("%Y%m%d"),
+        tz='utc'
+    )
+
+    # load data
+    df = entsoe_client.query_import(
+        country_code, 
+        start=start_date, 
+        end=end_date
+    )
+    df = df.reset_index(drop=False)
+
+    df = pl.from_pandas(df)
+
+    return df
+
+
+DOMAIN_PROCESSORS = {
+    "load": query_entsoe_load,
+    "generation": query_entsoe_generation,
+    "import": query_entsoe_import,
+}
+
 
 # catalog_item: CatalogItem,
 # entsoe_client: EntsoePandasClient,

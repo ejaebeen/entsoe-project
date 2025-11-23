@@ -69,4 +69,14 @@ SCHEMA = {
         }
 
     }),
+    "stg_import": pa.DataFrameSchema({
+        "index": pa.Column(pl.Datetime("ns", "UTC")),
+        "country_code": pa.Column(
+            str,
+            checks=[
+                # pa.Check.str_matches(r"^[A-Za-z]{2}$")
+            ]
+        ),
+        "date": pa.Column(pl.Date),
+    }),
 }

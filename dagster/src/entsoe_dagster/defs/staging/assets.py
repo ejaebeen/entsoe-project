@@ -18,6 +18,7 @@ def generate_asset_key(catalog_item: CatalogItem) -> dg.AssetKey:
 
 stg_load_catalog = catalog_reader_resource.select_catalog("stg_load")
 stg_generation_catalog = catalog_reader_resource.select_catalog("stg_generation")
+stg_import_catalog = catalog_reader_resource.select_catalog("stg_import")
 
 @dg.asset(
     key=generate_asset_key(stg_load_catalog),
@@ -76,7 +77,7 @@ def stg_load(
 
 @dg.asset(
     key=generate_asset_key(stg_generation_catalog),
-    description="Staging area for ENTSOE load data",
+    description="Staging area for ENTSOE generation data",
     group_name="staging_entsoe",
     deps=[
         generate_asset_key(catalog_reader_resource.select_catalog(dep_name))
@@ -114,6 +115,61 @@ def stg_generation(
     output_file_path = (
         Path(config.data_dir) /
         generate_file_path_from_asset_key(["stg", "entsoe", "stg_generation"], partition=True)
+    )
+    output_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    df_all.write_parquet(
+        output_file_path,
+        partition_by=["date", "country_code"]
+    )
+
+    yield dg.MaterializeResult(
+        metadata={
+            "dagster/row_count": df_all.height
+        }
+    )
+
+
+@dg.asset(
+    key=generate_asset_key(stg_import_catalog),
+    description="Staging area for ENTSOE import data",
+    group_name="staging_entsoe",
+    deps=[
+        generate_asset_key(catalog_reader_resource.select_catalog(dep_name))
+        for dep_name in stg_import_catalog.deps
+    ],
+    tags=stg_import_catalog.tags,
+    metadata={
+        "dagster/uri": str(generate_file_path_from_asset_key(
+            ["stg", "entsoe", "stg_import"], 
+            partition=True
+        )),
+        "dagster/column_schema": pandera_schema_to_dagster_type(SCHEMA["stg_import"]).metadata.get("schema"),
+    }
+)
+def stg_import(
+        config: Config
+):
+    dfs = []
+
+    # Extract
+    for dep_name in stg_import_catalog.deps:
+        item = catalog_reader_resource.select_catalog(dep_name)
+        input_file_path = (
+            Path(config.data_dir) /
+            generate_file_path_from_asset_key(["ingestion", "entsoe", dep_name])
+        )
+        df = pl.read_parquet(input_file_path)
+
+        dfs.append((item.kwargs.get("country_code"), df))
+
+    # Transform
+    df_all = stg_entsoe_data(dfs)
+
+    # load
+    output_file_path = (
+        Path(config.data_dir) /
+        generate_file_path_from_asset_key(["stg", "entsoe", "stg_import"], partition=True)
     )
     output_file_path.parent.mkdir(parents=True, exist_ok=True)
 

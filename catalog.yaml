@@ -97,6 +97,55 @@
     domain: load
   kwargs:
     country_code: DE
+# import
+- name: raw_import_belgium
+  description: Ingest raw import data for Belgium
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: import
+  kwargs:
+    country_code: BE
+- name: raw_import_france
+  description: Ingest raw import data for France
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: import
+  kwargs:
+    country_code: FR
+- name: raw_import_netherlands
+  description: Ingest raw import data for Netherlands
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: import
+  kwargs:
+    country_code: NL
+- name: raw_import_spain
+  description: Ingest raw import data for Spain
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: import
+  kwargs:
+    country_code: ES
+- name: raw_import_italy
+  description: Ingest raw import data for Italy
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: import
+  kwargs:
+    country_code: IT
+- name: raw_import_germany_luxembourg
+  description: Ingest raw import data for Germany and Luxembourg
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: import
+  kwargs:
+    country_code: DE_LU
 
 # STAGING LAYER CATALOG ITEMS
 - name: stg_load
@@ -125,6 +174,19 @@
     - raw_generation_spain
     - raw_generation_italy
     - raw_generation_germany
+- name: stg_import
+  description: Stage import data
+  layer: staging
+  group_name: entsoe
+  tags:
+    domain: import
+  deps:
+    - raw_import_belgium
+    - raw_import_france
+    - raw_import_netherlands
+    - raw_import_spain
+    - raw_import_italy
+    - raw_import_germany_luxembourg
 
 
 # PROCESSED LAYER CATALOG ITEMS

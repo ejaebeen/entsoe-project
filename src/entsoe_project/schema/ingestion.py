@@ -61,4 +61,10 @@ SCHEMA = {
     "raw_generation_germany": pa.DataFrameSchema({}),
     "raw_generation_spain": pa.DataFrameSchema({}),
     "raw_generation_italy": pa.DataFrameSchema({}),
+    "raw_import_belgium": pa.DataFrameSchema({}),
+    "raw_import_france": pa.DataFrameSchema({}),
+    "raw_import_netherlands": pa.DataFrameSchema({}),
+    "raw_import_germany_luxembourg": pa.DataFrameSchema({}),
+    "raw_import_spain": pa.DataFrameSchema({}),
+    "raw_import_italy": pa.DataFrameSchema({}),
 }
