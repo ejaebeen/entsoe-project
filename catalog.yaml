@@ -1,4 +1,54 @@
 # INGESTION LAYER CATALOG ITEMS
+# generation
+- name: raw_generation_belgium
+  description: Ingest raw generation data for Belgium
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: generation
+  kwargs:
+    country_code: BE
+- name: raw_generation_france
+  description: Ingest raw generation data for France
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: generation
+  kwargs:
+    country_code: FR
+- name: raw_generation_netherlands
+  description: Ingest raw generation data for Netherlands
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: generation
+  kwargs:
+    country_code: NL
+- name: raw_generation_spain
+  description: Ingest raw generation data for Spain
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: generation
+  kwargs:
+    country_code: ES
+- name: raw_generation_italy
+  description: Ingest raw generation data for Italy
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: generation
+  kwargs:
+    country_code: IT
+- name: raw_generation_germany
+  description: Ingest raw generation data for Germany
+  layer: ingestion
+  group_name: entsoe
+  tags:
+    domain: generation
+  kwargs:
+    country_code: DE
+# load
 - name: raw_load_belgium
   description: Ingest raw load data for Belgium
   layer: ingestion
@@ -62,6 +112,20 @@
     - raw_load_spain
     - raw_load_italy
     - raw_load_germany
+- name: stg_generation
+  description: Stage generation data
+  layer: staging
+  group_name: entsoe
+  tags:
+    domain: generation
+  deps:
+    - raw_generation_belgium
+    - raw_generation_france
+    - raw_generation_netherlands
+    - raw_generation_spain
+    - raw_generation_italy
+    - raw_generation_germany
+
 
 # PROCESSED LAYER CATALOG ITEMS
 

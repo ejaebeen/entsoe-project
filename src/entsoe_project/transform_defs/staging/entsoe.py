@@ -12,6 +12,6 @@ def stg_entsoe_data(dfs: list[tuple[str, pl.DataFrame]]):
             ])
         )
         processed_dfs.append(df)
-    df_all = pl.concat(processed_dfs, how="vertical")
+    df_all = pl.concat(processed_dfs, how="diagonal")
 
     return df_all
